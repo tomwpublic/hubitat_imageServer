@@ -47,6 +47,8 @@ def uninstalled()
 
 def entryPage()
 {
+    enableOauth()
+    
     dynamicPage(name: "entryPage", title: "", install: true, uninstall: true)
     {
         section
@@ -124,6 +126,21 @@ def logDebug(msg)
     }
 }
 
+private void enableOauth()
+{
+    // Thanks! - https://github.com/imnotbob/autoMower/blob/main/automower-connect.groovy
+    Map params=
+        [
+            uri: "http://localhost:8080/app/edit/update?_action_update=Update&oauthEnabled=true&id=${app.appTypeId}".toString(),
+            headers: ['Content-Type':'text/html;charset=utf-8']
+        ]
+    try
+    {
+        httpPost(params) {}
+    }
+    catch (e) {}
+}
+
 def getToken()
 {
     if(!state.accessToken)
@@ -194,6 +211,8 @@ def serveLatest()
     {
         def time = 0
         def latestDev
+        
+        if(!sourceDevs?.size()) { throw new Exception("no devices selected") }
         
         for(dev in sourceDevs)
         {
