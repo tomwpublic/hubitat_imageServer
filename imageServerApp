@@ -272,7 +272,7 @@ def getImageAttr(dev)
     if(image?.contains("file:"))
     {
         // new-style images are stored in the File Manager
-        //   and the 'image' attribute is the local URL to the image
+        //   and the 'image' attribute is "file:" plus the fileName
         def fileName = image.split("file:")?.getAt(1)
         try
         {
