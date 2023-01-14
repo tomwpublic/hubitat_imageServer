@@ -250,14 +250,13 @@ def invalidImageVals()
 
 def renderImageMap(dev)
 {
-    def image = getImageAttr(dev)
-    if(null == image)
+    def imageArr = getImageAttr(dev)
+    if(null == imageArr)
     {
         // the file was deleted, or something
         throw new Exception("image missing")
     }
     
-    def imageArr = hubitat.helper.HexUtils.hexStringToByteArray(image)
     return [contentType: "image/jpeg;base64", data: imageArr, status: 200]
 }
 
@@ -270,11 +269,12 @@ def getImageAttr(dev)
         throw new Exception("no image present")
     }
     
-    if(image?.contains("http"))
+    if(image?.contains("file:"))
     {
         // new-style images are stored in the File Manager
         //   and the 'image' attribute is the local URL to the image
-        image = readImageFromFile(image)
+        def fileName = image.split("file:")?.getAt(1)
+        image = downloadHubFile(fileName)
     }
     
     return image    
@@ -293,28 +293,6 @@ def notificationHandler(evt)
     }
 }
 
-def readImageFromFile(filePath)
-{
-    def params = 
-        [
-            uri: filePath,
-            contentType: "text/plain",
-            textParser: true
-        ]
-    
-    try
-    {
-        httpGet(params)
-        { resp ->
-            return strReaderToString(resp?.data)
-        }
-    }
-    catch(Exception e)
-    {
-		log.error "Error reading file: ${e.message}"
-    }
-}
-
 def pushoverNotification(dev, String title = "", String message = "New Image")
 {
     if([poUserKey, poApiToken].contains(null))
@@ -323,7 +301,7 @@ def pushoverNotification(dev, String title = "", String message = "New Image")
         return
     }
     
-    def imageArr = hubitat.helper.HexUtils.hexStringToByteArray(getImageAttr(dev))
+    def imageArr = getImageAttr(dev)
     
     // thanks!
     //  below code was referenced from Younes at https://community.hubitat.com/t/solved-pushover-notification-with-image/102299
@@ -375,26 +353,4 @@ def pushoverNotification(dev, String title = "", String message = "New Image")
     {
         log.error "pushoverNotification error: ${e.message}"
     }
-}
-
-def strReaderToString(reader)
-{
-    if(null == reader) { return }
-    
-    // https://stackoverflow.com/a/17751100
-    java.lang.StringBuilder builder = new java.lang.StringBuilder()
-    
-    // non-zero value so we read at least once
-    int charsRead = 1
-    char[] chars = new char[1024]
-    
-    while(charsRead > 0)
-    {
-        charsRead = reader.read(chars, 0, chars.length)
-        if(charsRead>0) { builder.append(chars, 0, charsRead) }
-    }
-    
-    def str = builder.toString()
-    
-    return str
 }
