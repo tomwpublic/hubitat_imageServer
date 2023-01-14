@@ -274,7 +274,11 @@ def getImageAttr(dev)
         // new-style images are stored in the File Manager
         //   and the 'image' attribute is the local URL to the image
         def fileName = image.split("file:")?.getAt(1)
-        image = downloadHubFile(fileName)
+        try
+        {
+            image = downloadHubFile(fileName)
+        }
+        catch(java.nio.file.NoSuchFileException e) { return null }
     }
     
     return image    
