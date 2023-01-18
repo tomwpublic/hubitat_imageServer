@@ -7,7 +7,7 @@ The app makes it possible to use and manipulate images saved using the `take` co
 
 # Manual Installation instructions:
 
-Installing with Hubitat Package Manager (HPM) is recommended.
+Installing with Hubitat Package Manager (HPM) is recommended.  Search for keyword "imageserver".
 
 If you must install manually, follow these steps:
 
