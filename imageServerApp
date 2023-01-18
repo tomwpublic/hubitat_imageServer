@@ -278,7 +278,29 @@ def getImageAttr(dev)
         {
             image = downloadHubFile(fileName)
         }
-        catch(java.nio.file.NoSuchFileException e) { return null }
+        catch(java.nio.file.NoSuchFileException e)
+        {
+            // file is missing, even though the 'image' attr said it was there
+            return null
+        }
+        catch(groovy.lang.MissingMethodException e)
+        {
+            if(e.message.contains("downloadHubFile"))
+            {
+                // file I/O APIs were added in 2.3.4.132
+                def errMsg = "Your camera driver indicates this image is stored in the file manager."
+                errMsg += "  You must update your Hubitat software to at least version 2.3.4.132."  
+                log.error errMsg
+            }
+            else { logDebug e }
+            
+            return null
+        }
+        catch(e)
+        {
+            logDebug e
+            return null
+        }
     }
     
     return image    
