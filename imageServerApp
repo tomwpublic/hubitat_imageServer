@@ -302,6 +302,11 @@ def getImageAttr(dev)
             return null
         }
     }
+    else
+    {
+        // old-style images are stored as a hex string, so convert to byte[] before returning
+        image = hubitat.helper.HexUtils.hexStringToByteArray(image)
+    }
     
     return image    
 }
