@@ -113,7 +113,8 @@ def pushoverPage()
             paragraph("<br>")
             input name:	"pushoverDevs", type: "capability.*", title: "Select devices with 'image' to send notifications from automatically after each 'take' action.", multiple: true, required: false, submitOnChange: true
             paragraph("<br>")
-            paragraph("<b>HTTP GET format for on demand notifications:</b> ${getFullLocalApiServerUrl().replace('/apps', ':8080/apps') + "/${notificationPath}/required_DNI_or_name/optional_title/optional_message?access_token=${token}"}")
+            def queryOptions = "<b>&</b>device=required_DNI_or_name<i><b>&</b>title=optional_title<b>&</b>message=optional_message<b>&</b>doTake=optional_true</i>"
+            paragraph("<b>HTTP GET format for on demand notifications:</b> ${getFullLocalApiServerUrl().replace('/apps', ':8080/apps') + "/${notificationPath}?access_token=${token}" + queryOptions}")
             input name:	"pushoverDevsOnDemand", type: "capability.*", title: "Select devices with 'image' to send notifications from on demand via HTTP GET as shown above.", multiple: true, required: false, submitOnChange: true            
         }
         
@@ -172,13 +173,10 @@ mappings
     
     def notifyHandler = [GET: "notifyOnDemand"]
     
-    path("/${notificationPath}/:devDniOrName/:title/:message")
-    { action: notifyHandler }
-    
-    path("/${notificationPath}/:devDniOrName/:title")
-    { action: notifyHandler }
-    
     path("/${notificationPath}/:devDniOrName")
+    { action: notifyHandler }
+    
+    path("/${notificationPath}")
     { action: notifyHandler }
 }
 
@@ -410,17 +408,20 @@ def notifyOnDemand()
     logDebug("notifyOnDemand(): ${params}")
     
     // only dni/name is absolutely required
-    if(!params.devDniOrName) { throw new Exception("must specify device name or DNI") }    
+    if(!(params.devDniOrName || params.device)) { throw new Exception("must specify device name or DNI") }    
     
     // remove URL decoding from these others, if they exist
     if(params.title) { params.title = java.net.URLDecoder.decode(params.title) }
     if(params.message) { params.message = java.net.URLDecoder.decode(params.message) }
-    
+
     try
     {
-        def dev = findDevByDniOrName(pushoverDevsOnDemand, params.devDniOrName)
+        def dev = findDevByDniOrName(pushoverDevsOnDemand, params.devDniOrName ?: params.device)
         if(!dev) { throw new Exception("no matching device") }
-
+        
+        // if the query specified doTake as true, update the image
+        if([true, "True", "true"].contains(params.doTake)) { dev.take() }
+        
         pushoverNotification(dev, params.title ?: (dev.getLabel() ?: dev.getName()), params.message ?: "New image: ${new Date().toString()}")
     }    
     catch (Exception e)
