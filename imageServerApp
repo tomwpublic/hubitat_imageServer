@@ -416,8 +416,6 @@ def notifyOnDemand()
     if(params.title) { params.title = java.net.URLDecoder.decode(params.title) }
     if(params.message) { params.message = java.net.URLDecoder.decode(params.message) }
     
-    log.debug params
-    
     try
     {
         def dev = findDevByDniOrName(pushoverDevsOnDemand, params.devDniOrName)
