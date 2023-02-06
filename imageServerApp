@@ -419,8 +419,8 @@ def notifyOnDemand()
         def dev = findDevByDniOrName(pushoverDevsOnDemand, params.devDniOrName ?: params.device)
         if(!dev) { throw new Exception("no matching device") }
         
-        // if the query specified doTake as true, update the image
-        if([true, "True", "true"].contains(params.doTake)) { dev.take() }
+        // if the query specified anything other than 'false' for doTake, update the image
+        if(![false, "False", "false"].contains(params.doTake)) { dev.take() }
         
         pushoverNotification(dev, params.title ?: (dev.getLabel() ?: dev.getName()), params.message ?: "New image: ${new Date().toString()}")
     }    
