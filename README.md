@@ -36,9 +36,9 @@ If you must install manually, follow these steps:
         * For cameras this is usually the only device.
         * For doorbells, this is usually the main device and usually isn't a "doorbell" or "button" device.
     * The second device selection is for devices that you want to be able to send a customized Pushover notification to by using an HTTP GET request.  A sample URL is shown.
-        * The required parameter `device` from the sample URL can be either the device name/label or device network ID.
-        * The `title` and `message` parameters can be specified by you, or else they can be omitted they will be set to generic values in the notification.
-        * The `doTake` parameter can be specified as `true` and a new image will be taken prior to sending, or it can be omitted and the existing image contents will be used.
+        * The required `device` parameter can be either the device name/label or device network ID (DNI).
+        * The optional `title` and `message` parameters can be specified by you, or else they can be omitted and generic values will be used in the notification.
+        * A `take` will happen unless the optional `doTake` parameter is specified as `false`.  It can be omitted if you want to send the existing image contents.
 
 # Disclaimer
 
