@@ -32,10 +32,10 @@ If you must install manually, follow these steps:
 * In the section labeled **Select devices...for Pushover notifications.**, 
     * Enter your Pushover User Key and API Token
         * This information is found in the "Create an Application/API Token" section of the Pushover web portal.
-    * The first device selection is for devices that should send a generic Pushover notification any time a new `image` is captured using `take`
+    * The first device selection is for devices that you want to automatically send a generic Pushover notification from any time a new `image` is captured using `take`
         * For cameras this is usually the only device.
         * For doorbells, this is usually the main device and usually isn't a "doorbell" or "button" device.
-    * The second device selection is for devices that you want to be able to send a customized Pushover notification to on demand.
+    * The second device selection is for devices that you want to be able to send an on-demand customized Pushover notification from.
         * To send the notification, you use an HTTP GET request as shown in the sample URL in the app.
         * The required `device` parameter can be either the device name/label or device network ID (DNI).
         * The optional `title` and `message` parameters can be specified by you, or else they can be omitted and generic values will be used in the notification.
