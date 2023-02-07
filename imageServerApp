@@ -113,7 +113,7 @@ def pushoverPage()
             paragraph("<br>")
             input name:	"pushoverDevs", type: "capability.*", title: "Select devices with 'image' to send notifications from automatically after each 'take' action.", multiple: true, required: false, submitOnChange: true
             paragraph("<br>")
-            def queryOptions = "<b>&</b>device=required_DNI_or_name<i><b>&</b>title=optional_title<b>&</b>message=optional_message<b>&</b>doTake=optional_true</i>"
+            def queryOptions = "<b>&</b>device=required_DNI_or_name<i><b>&</b>title=optional_title<b>&</b>message=optional_message<b>&</b>doTake=optional_false</i>"
             paragraph("<b>HTTP GET format for on demand notifications:</b> ${getFullLocalApiServerUrl().replace('/apps', ':8080/apps') + "/${notificationPath}?access_token=${token}" + queryOptions}")
             input name:	"pushoverDevsOnDemand", type: "capability.*", title: "Select devices with 'image' to send notifications from on demand via HTTP GET as shown above.", multiple: true, required: false, submitOnChange: true            
         }
