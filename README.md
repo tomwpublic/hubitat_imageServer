@@ -35,10 +35,11 @@ If you must install manually, follow these steps:
     * The first device selection is for devices that should send a generic Pushover notification any time a new `image` is captured using `take`
         * For cameras this is usually the only device.
         * For doorbells, this is usually the main device and usually isn't a "doorbell" or "button" device.
-    * The second device selection is for devices that you want to be able to send a customized Pushover notification to by using an HTTP GET request.  A sample URL is shown.
+    * The second device selection is for devices that you want to be able to send a customized Pushover notification to on demand.
+        * To send the notification, you use an HTTP GET request as shown in the sample URL in the app.
         * The required `device` parameter can be either the device name/label or device network ID (DNI).
         * The optional `title` and `message` parameters can be specified by you, or else they can be omitted and generic values will be used in the notification.
-        * A `take` will happen unless the optional `doTake` parameter is specified as `false`.  It can be omitted if you want to send the existing image contents.
+        * A `take` will be automatically executed so that an updated image will be used for the notification.  You can set the optional `doTake` parameter to `false` to override this behavior.
 
 # Disclaimer
 
