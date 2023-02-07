@@ -2,7 +2,7 @@
 {
   "packageName": "hubitat_imageServer",
   "author": "tomw",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "minimumHEVersion": "2.1.9",
   "dateReleased": "2021-08-13",
   "apps": [
@@ -15,7 +15,7 @@
     }
   ],
   "licenseFile": "https://raw.githubusercontent.com/tomwpublic/hubitat_imageServer/main/LICENSE",
-  "releaseNotes": "0.9.0 - tomw - Compatibility for images stored in File Manager\n0.1.0 - tomw - Pre-release version",
+  "releaseNotes": "0.9.1 - tomw - Added 'notify' GET entrypoint for sending Pushover notifications on demand\n0.9.0 - tomw - Compatibility for images stored in File Manager\n0.1.0 - tomw - Pre-release version",
   "documentationLink": "https://github.com/tomwpublic/hubitat_imageServer/blob/main/README.md",
   "communityLink": ""
 }

@@ -18,6 +18,7 @@ limitations under the License.
 
 Change history:
 
+0.9.1 - tomw - Added 'notify' GET entrypoint for sending Pushover notifications on demand
 0.9.0 - tomw - Compatibility for images stored in File Manager
 0.1.0 - tomw - Pre-release version
 
@@ -107,10 +108,16 @@ def pushoverPage()
         }
         section
         {
-            input name:	"pushoverDevs", type: "capability.*", title: "Select any devices with the 'image' attribute.", multiple: true, required: false, submitOnChange: true
             input name:	"poUserKey", type: "text", title: "Pushover User Key", required: false
             input name:	"poApiToken", type: "text", title: "Pushover API Token", required: false
-        }        
+            paragraph("<br>")
+            input name:	"pushoverDevs", type: "capability.*", title: "Select devices with 'image' to send notifications from automatically after each 'take' action.", multiple: true, required: false, submitOnChange: true
+            paragraph("<br>")
+            def queryOptions = "<b>&</b>device=required_DNI_or_name<i><b>&</b>title=optional_title<b>&</b>message=optional_message<b>&</b>doTake=optional_false</i>"
+            paragraph("<b>HTTP GET format for on demand notifications:</b> ${getFullLocalApiServerUrl().replace('/apps', ':8080/apps') + "/${notificationPath}?access_token=${token}" + queryOptions}")
+            input name:	"pushoverDevsOnDemand", type: "capability.*", title: "Select devices with 'image' to send notifications from on demand via HTTP GET as shown above.", multiple: true, required: false, submitOnChange: true            
+        }
+        
         section
         {
             linkToMain()
@@ -154,50 +161,43 @@ def getToken()
 import groovy.transform.Field
 @Field String imagePath = "image"
 @Field String latestPath = "latest"
+@Field String notificationPath = "notify"
 
 mappings
 {
-    path("/${imagePath}/:devDni")
-    {
-        action:
-            [
-                GET: "serveImage"
-            ]
-    }
+    path("/${imagePath}/:devDniOrName")
+    { action: [GET: "serveImage"] }
     
     path("/${latestPath}")
-    {
-        action:
-            [
-                GET: "serveLatest"
-            ]
-    }
+    { action: [GET: "serveLatest"] }
+    
+    def notifyHandler = [GET: "notifyOnDemand"]
+    
+    path("/${notificationPath}/:devDniOrName")
+    { action: notifyHandler }
+    
+    path("/${notificationPath}")
+    { action: notifyHandler }
 }
 
 def serveImage()
 {
-    def reqDev = params.devDni
+    def reqDev = params.devDniOrName
     
     logDebug("Image Server request for ${reqDev}")
     
     try
     {
-        for(dev in sourceDevs)
+        def dev = findDevByDniOrName(sourceDevs, params.devDniOrName)
+        if(!dev) { throw new Exception("no matching device") }
+        
+        if(null == dev.currentValue('image'))
         {
-            if(reqDev == dev.getDeviceNetworkId())
-            {
-                if(null == dev.currentValue('image'))
-                {
-                    throw new Exception("no image attribute present")
-                }
-            
-                logDebug("Image Server matched ${dev.getName()}")            
-                
-                return render(renderImageMap(dev))
-            }
+            throw new Exception("no image attribute present")
         }
         
-        throw new Exception("no matching device")
+        logDebug("Image Server matched ${dev.getName()}") 
+        return render(renderImageMap(dev))
     }
     catch (Exception e)
     {
@@ -326,9 +326,9 @@ def notificationHandler(evt)
 
 def pushoverNotification(dev, String title = "", String message = "New Image")
 {
-    if([poUserKey, poApiToken].contains(null))
+    if([poUserKey, poApiToken, dev].contains(null))
     {
-        logDebug("missing Pushover credentials")
+        logDebug("missing Pushover credentials or device")
         return
     }
     
@@ -383,5 +383,49 @@ def pushoverNotification(dev, String title = "", String message = "New Image")
     catch(Exception e)
     {
         log.error "pushoverNotification error: ${e.message}"
+    }
+}
+
+def findDevByDniOrName(devs, idValue)
+{
+    if(!idValue) { return }
+    
+    idValue = java.net.URLDecoder.decode(idValue)
+    
+    // check for matching DNI first and return if so...
+    def dev = devs?.find { it.getDeviceNetworkId()?.toString() == idValue }
+    if(dev) { return dev }
+    
+    // ...if not, then check whether either name or label matches
+    // note that this would be first found, since only DNI is globally unique
+    dev = devs?.find { [it.getName(), it.getLabel()].contains(idValue) }
+    
+    return dev
+}
+
+def notifyOnDemand()
+{
+    logDebug("notifyOnDemand(): ${params}")
+    
+    // only dni/name is absolutely required
+    if(!(params.devDniOrName || params.device)) { throw new Exception("must specify device name or DNI") }    
+    
+    // remove URL decoding from these others, if they exist
+    if(params.title) { params.title = java.net.URLDecoder.decode(params.title) }
+    if(params.message) { params.message = java.net.URLDecoder.decode(params.message) }
+
+    try
+    {
+        def dev = findDevByDniOrName(pushoverDevsOnDemand, params.devDniOrName ?: params.device)
+        if(!dev) { throw new Exception("no matching device") }
+        
+        // if the query specified anything other than 'false' for doTake, update the image
+        if(![false, "False", "false"].contains(params.doTake)) { dev.take() }
+        
+        pushoverNotification(dev, params.title ?: (dev.getLabel() ?: dev.getName()), params.message ?: "New image: ${new Date().toString()}")
+    }    
+    catch (Exception e)
+    {
+        return render(contentType: "text/html", data: "Image Server: ${e.message}", status: 200) 
     }
 }
