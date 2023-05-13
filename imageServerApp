@@ -18,6 +18,7 @@ limitations under the License.
 
 Change history:
 
+0.9.2 - tomw - Name/Label display improvements
 0.9.1 - tomw - Added 'notify' GET entrypoint for sending Pushover notifications on demand
 0.9.0 - tomw - Compatibility for images stored in File Manager
 0.1.0 - tomw - Pre-release version
@@ -83,7 +84,7 @@ def webServerPage()
             
             for(dev in sourceDevs)
             {
-                paragraph("<b>${dev.getName()}:</b>")
+                paragraph("<b>${dev.getDisplayName()}:</b>")
                 paragraph("<p style='margin-left:10%'>${getFullLocalApiServerUrl() + "/${imagePath}/${dev.getDeviceNetworkId()}?access_token=${token}"}</p>")
             }
             
@@ -196,7 +197,7 @@ def serveImage()
             throw new Exception("no image attribute present")
         }
         
-        logDebug("Image Server matched ${dev.getName()}") 
+        logDebug("Image Server matched ${dev.getDisplayName()}") 
         return render(renderImageMap(dev))
     }
     catch (Exception e)
@@ -244,7 +245,6 @@ def serveLatest()
 
 def invalidImageVals()
 {
-    // "n/a" is the default state after clearImages()
     return [null, "n/a"]
 }
 
@@ -422,7 +422,7 @@ def notifyOnDemand()
         // if the query specified anything other than 'false' for doTake, update the image
         if(![false, "False", "false"].contains(params.doTake)) { dev.take() }
         
-        pushoverNotification(dev, params.title ?: (dev.getLabel() ?: dev.getName()), params.message ?: "New image: ${new Date().toString()}")
+        pushoverNotification(dev, params.title ?: getDisplayName(), params.message ?: "New image: ${new Date().toString()}")
     }    
     catch (Exception e)
     {
